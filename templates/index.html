@@ -20,6 +20,57 @@
     </div>
   </header>
 
+  <!-- Photo Collage -->
+  <div class="photo-collage" id="collage">
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+    <div class="collage-cell"><img alt=""></div>
+  </div>
+
+  <script>
+    const allPhotos = [
+      {% for photo in ['IMG_1671.jpeg','IMG_1775.jpeg','IMG_2253.jpeg','IMG_2287.jpeg','IMG_2334.jpeg','IMG_3306.jpeg','IMG_3424.jpeg','IMG_3547.jpeg','IMG_3624.jpeg','IMG_3630.jpeg','IMG_4078.jpeg','IMG_4990.jpeg','IMG_4997.jpeg','IMG_5509.jpeg','IMG_5757.jpeg','IMG_5775.jpeg','IMG_8178.jpeg','IMG_9521.jpeg'] %}
+      "{{ url_for('static', filename='images/' + photo) }}",
+      {% endfor %}
+    ];
+
+    const cells = document.querySelectorAll('#collage .collage-cell img');
+    const pool = [...allPhotos];
+
+    // Shuffle and assign initial photos to the 9 cells
+    pool.sort(() => Math.random() - 0.5);
+    const displayed = pool.slice(0, 9);
+    const bench = pool.slice(9);
+    cells.forEach((img, i) => { img.src = displayed[i]; });
+
+    function swapOne() {
+      if (bench.length === 0) return;
+      const cellIdx = Math.floor(Math.random() * cells.length);
+      const img = cells[cellIdx];
+      const newPhoto = bench.splice(Math.floor(Math.random() * bench.length), 1)[0];
+
+      const preload = new Image();
+      preload.src = newPhoto;
+      preload.onload = () => {
+        img.style.opacity = '0';
+        setTimeout(() => {
+          bench.push(displayed[cellIdx]);
+          displayed[cellIdx] = newPhoto;
+          img.src = newPhoto;
+          setTimeout(() => { img.style.opacity = '1'; }, 50);
+        }, 1200);
+      };
+    }
+
+    setInterval(swapOne, 3500);
+  </script>
+
   <div class="container-fluid px-3 py-3">
     {% if not entries %}
     <div class="empty-state">

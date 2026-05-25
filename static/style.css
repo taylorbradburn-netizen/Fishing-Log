@@ -72,6 +72,37 @@ body {
   color: #fff;
 }
 
+/* ---- Photo Collage ---- */
+
+.photo-collage {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+}
+
+.collage-cell {
+  overflow: hidden;
+  height: 300px;
+}
+
+.collage-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 60%;
+  display: block;
+  transition: opacity 1.2s ease;
+}
+
+@media (max-width: 480px) {
+  .photo-collage {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .collage-cell {
+    height: 200px;
+  }
+}
+
 /* ---- Empty State ---- */
 
 .empty-state {
