@@ -138,14 +138,25 @@
         {% endif %}
 
         <!-- Flies -->
-        {% if e.flies %}
+        {% if e.flies or e.fly_photos %}
         <div class="log-section">
           <div class="log-section-label">Flies Used</div>
-          <div class="log-tags">
+          {% if e.flies %}
+          <div class="log-tags mb-2">
             {% for fly in e.flies %}
             <span class="log-tag fly-tag">{{ fly }}</span>
             {% endfor %}
           </div>
+          {% endif %}
+          {% if e.fly_photos %}
+          <div class="fly-photos">
+            {% for photo in e.fly_photos %}
+            <a href="/uploads/{{ photo }}" target="_blank">
+              <img src="/uploads/{{ photo }}" alt="Fly photo" class="fly-thumb">
+            </a>
+            {% endfor %}
+          </div>
+          {% endif %}
         </div>
         {% endif %}
 

@@ -1,12 +1,15 @@
 import os
 import json
+import uuid
 import sqlite3
 import requests
 from datetime import datetime, timezone
-from flask import Flask, jsonify, render_template, request, redirect, url_for
+from flask import Flask, jsonify, render_template, request, redirect, url_for, send_from_directory
 
 app = Flask(__name__)
 DB_PATH = os.environ.get("DB_PATH", "fishing_log.db")
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(DB_PATH)), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 RIVERS = [
     {"id": "13190500", "name": "SF Boise River",  "lat": 43.5,  "lon": -115.8},
@@ -43,9 +46,14 @@ def init_db():
                 methods       TEXT,
                 species       TEXT,
                 fish_count    INTEGER DEFAULT 0,
-                notes         TEXT
+                notes         TEXT,
+                fly_photos    TEXT
             )
         """)
+        try:
+            db.execute("ALTER TABLE entries ADD COLUMN fly_photos TEXT")
+        except Exception:
+            pass
 
 
 init_db()
@@ -104,6 +112,7 @@ def index():
         row = dict(e)
         row["flies"] = json.loads(e["flies"] or "[]")
         row["methods"] = json.loads(e["methods"] or "[]")
+        row["fly_photos"] = json.loads(e["fly_photos"] or "[]")
         parsed.append(row)
     return render_template("index.html", entries=parsed, rivers=RIVERS)
 
@@ -124,17 +133,32 @@ def river_conditions(site_id):
     return jsonify({**usgs, **pressure})
 
 
+@app.route("/uploads/<filename>")
+def uploaded_file(filename):
+    return send_from_directory(UPLOAD_DIR, filename)
+
+
 @app.route("/save", methods=["POST"])
 def save():
     f = request.form
     flies = json.dumps([x.strip() for x in f.get("flies", "").split(",") if x.strip()])
     methods = json.dumps(request.form.getlist("methods"))
+
+    saved_photos = []
+    for file in request.files.getlist("fly_photos"):
+        if file and file.filename:
+            ext = os.path.splitext(file.filename)[1].lower()
+            filename = uuid.uuid4().hex + ext
+            file.save(os.path.join(UPLOAD_DIR, filename))
+            saved_photos.append(filename)
+    fly_photos = json.dumps(saved_photos)
+
     with get_db() as db:
         db.execute("""
             INSERT INTO entries
               (created_at, date, river_name, river_id, pressure_inhg, pressure_trend,
-               cfs, water_temp_f, clarity, flies, methods, species, fish_count, notes)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               cfs, water_temp_f, clarity, flies, methods, species, fish_count, notes, fly_photos)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             datetime.now(timezone.utc).isoformat(),
             f.get("date"),
@@ -150,6 +174,7 @@ def save():
             f.get("species") or None,
             int(f.get("fish_count") or 0),
             f.get("notes") or None,
+            fly_photos,
         ))
     return redirect(url_for("index"))
 

@@ -289,6 +289,23 @@ body {
   border: 1px solid var(--border);
 }
 
+/* ---- Fly Photos ---- */
+
+.fly-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.fly-thumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
 /* ---- Bottom ---- */
 
 .log-bottom {

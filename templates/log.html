@@ -21,7 +21,7 @@
   </header>
 
   <div class="container-fluid px-3 py-3">
-    <form method="POST" action="/save">
+    <form method="POST" action="/save" enctype="multipart/form-data">
 
       <!-- Date & River -->
       <div class="form-card">
@@ -120,6 +120,10 @@
             <label class="form-label-custom">Flies (comma separated)</label>
             <input type="text" name="flies" class="form-input"
                    placeholder="e.g. PMD #16, BWO #18, Hopper #8">
+          </div>
+          <div class="form-group">
+            <label class="form-label-custom">Fly Photos (optional)</label>
+            <input type="file" name="fly_photos" class="form-input" accept="image/*" multiple>
           </div>
         </div>
       </div>
