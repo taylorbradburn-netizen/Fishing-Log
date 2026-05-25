@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TB's Fishing Log</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h1 class="mb-0">TB's Fishing Log</h1>
+        <small>{{ entries|length }} trip{{ 's' if entries|length != 1 else '' }} recorded</small>
+      </div>
+      <a href="/new" class="btn btn-refresh btn-sm">+ New Entry</a>
+    </div>
+  </header>
+
+  <div class="container-fluid px-3 py-3">
+    {% if not entries %}
+    <div class="empty-state">
+      <div class="empty-icon">🎣</div>
+      <div class="empty-text">No trips logged yet.</div>
+      <a href="/new" class="btn btn-refresh mt-3">Log Your First Trip</a>
+    </div>
+    {% endif %}
+
+    <div class="log-list">
+      {% for e in entries %}
+      <div class="log-card">
+
+        <!-- Card Header -->
+        <div class="log-card-header">
+          <div>
+            <div class="log-river-name">{{ e.river_name }}</div>
+            <div class="log-date">{{ e.date }}</div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if e.fish_count %}
+            <span class="fish-count-badge">{{ e.fish_count }} fish</span>
+            {% endif %}
+            <form method="POST" action="/delete/{{ e.id }}" onsubmit="return confirm('Delete this entry?')">
+              <button type="submit" class="btn-delete">✕</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Conditions Row -->
+        <div class="log-conditions">
+          <div class="log-condition-item">
+            <div class="log-condition-label">Flow</div>
+            <div class="log-condition-value">{{ e.cfs | int if e.cfs else '—' }} <span class="log-unit">CFS</span></div>
+          </div>
+          <div class="log-condition-item">
+            <div class="log-condition-label">Pressure</div>
+            <div class="log-condition-value">{{ e.pressure_inhg if e.pressure_inhg else '—' }} <span class="log-unit">inHg</span></div>
+            {% if e.pressure_trend %}
+            <div class="log-trend {{ 'trend-rising' if e.pressure_trend == 'Rising' else 'trend-falling' if e.pressure_trend == 'Falling' else 'trend-steady' }}">
+              {{ '↑' if e.pressure_trend == 'Rising' else '↓' if e.pressure_trend == 'Falling' else '→' }} {{ e.pressure_trend }}
+            </div>
+            {% endif %}
+          </div>
+          <div class="log-condition-item">
+            <div class="log-condition-label">Water Temp</div>
+            <div class="log-condition-value">{{ e.water_temp_f if e.water_temp_f else '—' }} <span class="log-unit">°F</span></div>
+          </div>
+          <div class="log-condition-item">
+            <div class="log-condition-label">Clarity</div>
+            <div class="log-condition-value log-clarity">{{ e.clarity or '—' }}</div>
+          </div>
+        </div>
+
+        <!-- Methods -->
+        {% if e.methods %}
+        <div class="log-section">
+          <div class="log-section-label">Method</div>
+          <div class="log-tags">
+            {% for m in e.methods %}
+            <span class="log-tag method-tag">{{ m }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Flies -->
+        {% if e.flies %}
+        <div class="log-section">
+          <div class="log-section-label">Flies Used</div>
+          <div class="log-tags">
+            {% for fly in e.flies %}
+            <span class="log-tag fly-tag">{{ fly }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Species + Notes -->
+        {% if e.species or e.notes %}
+        <div class="log-bottom">
+          {% if e.species %}
+          <div class="log-species">{{ e.fish_count or '' }} {{ e.species }}</div>
+          {% endif %}
+          {% if e.notes %}
+          <div class="log-notes">{{ e.notes }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>
