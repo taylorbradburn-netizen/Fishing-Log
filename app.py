@@ -54,6 +54,10 @@ def init_db():
             db.execute("ALTER TABLE entries ADD COLUMN fly_photos TEXT")
         except Exception:
             pass
+        try:
+            db.execute("ALTER TABLE entries ADD COLUMN angler_name TEXT")
+        except Exception:
+            pass
 
 
 init_db()
@@ -157,8 +161,8 @@ def save():
         db.execute("""
             INSERT INTO entries
               (created_at, date, river_name, river_id, pressure_inhg, pressure_trend,
-               cfs, water_temp_f, clarity, flies, methods, species, fish_count, notes, fly_photos)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+               cfs, water_temp_f, clarity, flies, methods, species, fish_count, notes, fly_photos, angler_name)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (
             datetime.now(timezone.utc).isoformat(),
             f.get("date"),
@@ -175,6 +179,7 @@ def save():
             int(f.get("fish_count") or 0),
             f.get("notes") or None,
             fly_photos,
+            f.get("angler_name") or None,
         ))
     return redirect(url_for("index"))
 

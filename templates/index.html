@@ -88,7 +88,7 @@
         <div class="log-card-header">
           <div>
             <div class="log-river-name">{{ e.river_name }}</div>
-            <div class="log-date">{{ e.date }}</div>
+            <div class="log-date">{{ e.date }}{% if e.angler_name %} &mdash; {{ e.angler_name }}{% endif %}</div>
           </div>
           <div class="d-flex align-items-center gap-2">
             {% if e.fish_count %}
