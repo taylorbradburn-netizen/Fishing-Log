@@ -12,9 +12,8 @@ UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(DB_PATH)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 RIVERS = [
-    {"id": "13190500", "name": "SF Boise River",       "lat": 43.5,   "lon": -115.8},
-    {"id": "13200000", "name": "Boise River (in town)", "lat": 43.607, "lon": -116.228},
-    {"id": "13183000", "name": "Owyhee River",          "lat": 43.65,  "lon": -117.23},
+    {"id": "13190500", "name": "SF Boise River",  "lat": 43.5,  "lon": -115.8},
+    {"id": "13183000", "name": "Owyhee River",     "lat": 43.65, "lon": -117.23},
     {"id": "13150430", "name": "Silver Creek",     "lat": 43.3,  "lon": -114.1},
     {"id": "09188500", "name": "Green River (WY)", "lat": 42.93, "lon": -109.97},
     {"id": "09205000", "name": "New Fork River",   "lat": 42.62, "lon": -110.11},
