@@ -94,6 +94,7 @@
             {% if e.fish_count %}
             <span class="fish-count-badge">{{ e.fish_count }} fish</span>
             {% endif %}
+            <a href="/edit/{{ e.id }}" class="btn-edit">✎</a>
             <form method="POST" action="/delete/{{ e.id }}" onsubmit="return confirm('Delete this entry?')">
               <button type="submit" class="btn-delete">✕</button>
             </form>

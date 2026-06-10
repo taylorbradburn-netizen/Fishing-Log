@@ -22,6 +22,10 @@ RIVERS = [
 RIVER_MAP = {r["id"]: r for r in RIVERS}
 
 
+def normalize_river_id(river_id):
+    return river_id if river_id in RIVER_MAP else None
+
+
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -127,6 +131,19 @@ def new_entry():
     return render_template("log.html", rivers=RIVERS, today=today)
 
 
+@app.route("/edit/<int:entry_id>")
+def edit_entry(entry_id):
+    with get_db() as db:
+        row = db.execute("SELECT * FROM entries WHERE id = ?", (entry_id,)).fetchone()
+    if not row:
+        return redirect(url_for("index"))
+    entry = dict(row)
+    entry["flies"] = json.loads(entry["flies"] or "[]")
+    entry["methods"] = json.loads(entry["methods"] or "[]")
+    entry["fly_photos"] = json.loads(entry["fly_photos"] or "[]")
+    return render_template("log.html", rivers=RIVERS, entry=entry)
+
+
 @app.route("/api/river-conditions/<site_id>")
 def river_conditions(site_id):
     river = RIVER_MAP.get(site_id)
@@ -167,7 +184,7 @@ def save():
             datetime.now(timezone.utc).isoformat(),
             f.get("date"),
             f.get("river_name"),
-            f.get("river_id") or None,
+            normalize_river_id(f.get("river_id")),
             float(f["pressure_inhg"]) if f.get("pressure_inhg") else None,
             f.get("pressure_trend") or None,
             float(f["cfs"]) if f.get("cfs") else None,
@@ -180,6 +197,61 @@ def save():
             f.get("notes") or None,
             fly_photos,
             f.get("angler_name") or None,
+        ))
+    return redirect(url_for("index"))
+
+
+@app.route("/update/<int:entry_id>", methods=["POST"])
+def update(entry_id):
+    f = request.form
+    flies = json.dumps([x.strip() for x in f.get("flies", "").split(",") if x.strip()])
+    methods = json.dumps(request.form.getlist("methods"))
+
+    with get_db() as db:
+        row = db.execute("SELECT fly_photos FROM entries WHERE id = ?", (entry_id,)).fetchone()
+    existing_photos = json.loads(row["fly_photos"] or "[]") if row else []
+
+    remove_set = set(request.form.getlist("remove_photos"))
+    kept_photos = [p for p in existing_photos if p not in remove_set]
+    for p in remove_set:
+        try:
+            os.remove(os.path.join(UPLOAD_DIR, p))
+        except OSError:
+            pass
+
+    new_photos = []
+    for file in request.files.getlist("fly_photos"):
+        if file and file.filename:
+            ext = os.path.splitext(file.filename)[1].lower()
+            filename = uuid.uuid4().hex + ext
+            file.save(os.path.join(UPLOAD_DIR, filename))
+            new_photos.append(filename)
+    fly_photos = json.dumps(kept_photos + new_photos)
+
+    with get_db() as db:
+        db.execute("""
+            UPDATE entries SET
+              date=?, river_name=?, river_id=?, pressure_inhg=?, pressure_trend=?,
+              cfs=?, water_temp_f=?, clarity=?, flies=?, methods=?, species=?,
+              fish_count=?, notes=?, fly_photos=?, angler_name=?
+            WHERE id=?
+        """, (
+            f.get("date"),
+            f.get("river_name"),
+            normalize_river_id(f.get("river_id")),
+            float(f["pressure_inhg"]) if f.get("pressure_inhg") else None,
+            f.get("pressure_trend") or None,
+            float(f["cfs"]) if f.get("cfs") else None,
+            float(f["water_temp_f"]) if f.get("water_temp_f") else None,
+            f.get("clarity") or None,
+            flies,
+            methods,
+            f.get("species") or None,
+            int(f.get("fish_count") or 0),
+            f.get("notes") or None,
+            fly_photos,
+            f.get("angler_name") or None,
+            entry_id,
         ))
     return redirect(url_for("index"))
 
