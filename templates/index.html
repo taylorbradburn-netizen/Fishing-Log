@@ -36,7 +36,7 @@
   <script>
     const allPhotos = [
       {% for photo in ['IMG_1671.jpeg','IMG_1775.jpeg','IMG_2253.jpeg','IMG_2287.jpeg','IMG_2334.jpeg','IMG_3306.jpeg','IMG_3424.jpeg','IMG_3547.jpeg','IMG_3624.jpeg','IMG_3630.jpeg','IMG_4078.jpeg','IMG_4990.jpeg','IMG_4997.jpeg','IMG_5509.jpeg','IMG_5757.jpeg','IMG_5775.jpeg','IMG_8178.jpeg','IMG_9521.jpeg'] %}
-      "{{ url_for('static', filename='images/' + photo) }}",
+      "{{ url_for('static', filename='images/collage/' + photo) }}",
       {% endfor %}
     ];
 
